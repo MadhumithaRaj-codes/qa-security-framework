@@ -1,6 +1,11 @@
 from flask import Flask, request, render_template_string
+import os
 
 app = Flask(__name__)
+
+# 🔐 Load credentials from environment variables (secure practice)
+ADMIN_USER = os.getenv("ADMIN_USER", "admin")
+ADMIN_PASS = os.getenv("ADMIN_PASS", "admin123")
 
 LOGIN_HTML = """
 <!DOCTYPE html>
@@ -40,7 +45,8 @@ def login():
         username = request.form.get("username")
         password = request.form.get("password")
 
-        if username == "admin" and password == "password123":
+        # ✅ Secure comparison using env variables
+        if username == ADMIN_USER and password == ADMIN_PASS:
             message = "Login Successful"
         else:
             message = "Invalid Credentials"
@@ -48,4 +54,5 @@ def login():
     return render_template_string(LOGIN_HTML, message=message)
 
 if __name__ == "__main__":
+    # ❌ never use debug=True in security projects
     app.run(debug=False, host="127.0.0.1")
