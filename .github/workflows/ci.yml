@@ -6,12 +6,12 @@ on:
   pull_request:
 
 jobs:
+
   api-tests:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
+    - uses: actions/checkout@v4
 
     - name: Set up Python
       uses: actions/setup-python@v5
@@ -21,7 +21,7 @@ jobs:
     - name: Install dependencies
       run: |
         pip install -r requirements.txt
-        pip install pytest requests bandit
+        pip install pytest requests bandit flask
 
     - name: Start Flask App
       run: |
@@ -31,12 +31,12 @@ jobs:
     - name: Run API Tests
       run: pytest api_tests -v
 
+
   security-scan:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
+    - uses: actions/checkout@v4
 
     - name: Set up Python
       uses: actions/setup-python@v5
@@ -46,5 +46,23 @@ jobs:
     - name: Install Bandit
       run: pip install bandit
 
-    - name: Run Security Scan
+    - name: Run Static Security Scan
       run: bandit -r .
+
+
+  owasp-zap-scan:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Start Flask App
+      run: |
+        pip install flask
+        nohup python app.py &
+        sleep 10
+
+    - name: ZAP Baseline Scan
+      uses: zaproxy/action-baseline@v0.10.0
+      with:
+        target: "http://127.0.0.1:5000"
